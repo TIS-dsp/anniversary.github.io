@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我们的时光博物馆 | 周年纪念</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 标题动画 */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s ease;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 3.5em;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+
+        /* 时间轴样式 */
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: #fff;
+            transform: translateX(-50%);
+        }
+
+        .memory-card {
+            width: 45%;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-card:nth-child(odd) {
+            margin-left: 55%;
+        }
+
+        .memory-card:nth-child(even) {
+            margin-right: 55%;
+        }
+
+        .photo-frame {
+            position: relative;
+            overflow: hidden;
+            border-radius: 13px;
+            height: 600px;
+        }
+
+        .photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .photo:hover {
+            transform: scale(1.05);
+        }
+
+        .memory-text {
+            margin-top: 15px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 底部纪念日倒计时 */
+        .countdown {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            margin-top: 50px;
+        }
+
+        #days {
+            font-size: 2.5em;
+            color: #ff6b6b;
+        }
+
+        /* 新增花瓣样式 */
+        .petal {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background: rgba(221, 8, 40, 0.6);
+            clip-path: polygon(50% 0%, 70% 30%, 98% 35%, 75% 60%, 79% 91%, 50% 80%, 21% 91%, 25% 60%, 2% 35%, 30% 30%);
+            animation: fall linear infinite;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* 新增信封和贺卡样式 */
+        .envelope-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .envelope {
+            width: 100px;
+            height: 60px;
+            background: #ff6b6b;
+            position: relative;
+            border-radius: 5px;
+            transform-origin: bottom;
+            transition: transform 0.5s ease;
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 30px solid #ff6b6b;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 0;
+            width: 100px;
+            height: 30px;
+            background: #ff6b6b;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+        }
+
+        .envelope.open {
+            transform: rotateX(180deg);
+        }
+
+        .card {
+            position: fixed;
+            bottom: -400px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 20px;
+            transition: bottom 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 999;
+        }
+
+        .card.show {
+            bottom: 20px;
+        }
+
+        .card textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            font-family: 'Microsoft YaHei', sans-serif;
+            font-size: 16px;
+            color: #333;
+            resize: none;
+            background: transparent;
+        }
+
+        /* 新增自动弹出贺卡样式 */
+        .auto-card {
+            position: fixed;
+            bottom: -400px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 20px;
+            transition: bottom 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 999;
+            text-align: center;
+        }
+
+        .auto-card.show {
+            bottom: 20px;
+        }
+
+        .auto-card h2 {
+            font-size: 1.5em;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+        }
+
+        .auto-card p {
+            font-size: 2em;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .auto-card button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .auto-card button:hover {
+            background: #ff4c4c;
+        }
+    </style>
+</head>
+<audio autoplay loop style="display:none;">
+    <source src="your-music.mp3" type="audio/mpeg">
+</audio>
+<body>
+    <div id="petals-container"></div>
+    <div class="container">
+        <div class="header">
+            <h1>❤️ 我们的第 <span id="days">0</span> 天 ❤️</h1>
+            <p style="color: #fff;">—— 时光会走远，影像能长存 ——</p>
+        </div>
+
+        <div class="timeline">
+            <!-- 记忆卡片模板 -->
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo1.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo2.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo3.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo4.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo5.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo6.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo7.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo8.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo9.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo10.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo11.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo12.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo13.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo14.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo15.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo16.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo17.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo18.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo19.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo20.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo21.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo22.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo23.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo24.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo25.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo26.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo27.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo28.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo29.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo30.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo31.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo32.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo33.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo34.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo35.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo36.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo37.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo38.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo39.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo40.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo41.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo42.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo43.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo44.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo45.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo46.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo47.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo48.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo49.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo50.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo51.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo52.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo53.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo54.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo55.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo56.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+            <div class="memory-card">
+                <div class="photo-frame">
+                    <img src="photo57.jpg" class="photo" alt="我们的回忆">
+                </div>
+                <p class="memory-text">2022.06.13<br>第一次在金湾华发商都约会</p>
+            </div>
+        </div>
+
+        <div class="countdown">
+            <h2>距离下一个周年纪念日还有</h2>
+            <div id="countdown-timer"></div>
+        </div>
+    </div>
+
+    <!-- 新增自动弹出贺卡 -->
+    <div class="auto-card" id="autoCard">
+        <h2>💌 给最爱的你 💌</h2>
+        <p>这是我们第<span id="autoDays">0</span>天的纪念日，感谢你一直以来的陪伴...</p>
+        <button onclick="closeAutoCard()">关闭</button>
+    </div>
+
+    <!-- 新增信封和贺卡 -->
+    <div class="envelope-container">
+        <div class="envelope" onclick="openCard()"></div>
+    </div>
+
+    <div class="card" id="card">
+        <textarea placeholder="写下你想说的话..."></textarea>
+    </div>
+
+    <script>
+        // 自动计算恋爱天数
+        const startDate = new Date("2022-06-09"); // 修改为你们的开始日期
+        const today = new Date();
+        const timeDiff = today.getTime() - startDate.getTime();
+        document.getElementById("days").innerText = Math.floor(timeDiff / (1000 * 3600 * 24));
+        document.getElementById("autoDays").innerText = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+        // 倒计时功能
+        function updateCountdown() {
+            const nextAnniversary = new Date(startDate);
+            nextAnniversary.setFullYear(today.getFullYear() + 1);
+            
+            const diff = nextAnniversary - today;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            document.getElementById("countdown-timer").innerHTML = `
+                <p style="font-size: 1.5em; margin:10px;">
+                    ${days} 天 ${hours} 小时
+                </p>
+            `;
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // 滚动动画
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.memory-card');
+            cards.forEach(card => {
+                const cardTop = card.getBoundingClientRect().top;
+                if(cardTop < window.innerHeight - 100) {
+                    card.style.opacity = 1;
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+
+            // 自动弹出贺卡逻辑
+            const scrollPosition = window.scrollY + window.innerHeight;
+            const pageHeight = document.documentElement.scrollHeight;
+            const autoCard = document.getElementById('autoCard');
+
+            if (scrollPosition >= pageHeight - 100 && !autoCard.classList.contains('show')) {
+                autoCard.classList.add('show');
+            }
+        });
+
+        // 关闭自动贺卡
+        function closeAutoCard() {
+            document.getElementById('autoCard').classList.remove('show');
+        }
+
+        // 新增花瓣生成函数
+        function createPetals() {
+            const container = document.getElementById('petals-container');
+            for(let i = 0; i < 20; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.animationDuration = Math.random() * 3 + 5 + 's'; // 5-8秒
+                petal.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(petal);
+            }
+        }
+        createPetals(); // 初始化花瓣
+
+        // 新增信封打开逻辑
+        function openCard() {
+            const envelope = document.querySelector('.envelope');
+            const card = document.getElementById('card');
+
+            // 打开信封
+            envelope.classList.add('open');
+
+            // 弹出贺卡
+            setTimeout(() => {
+                card.classList.add('show');
+            }, 300); // 信封打开动画完成后弹出贺卡
+        }
+
+        // 点击贺卡外部关闭
+        document.addEventListener('click', (e) => {
+            const card = document.getElementById('card');
+            const envelope = document.querySelector('.envelope-container');
+            if (!card.contains(e.target) && !envelope.contains(e.target)) {
+                card.classList.remove('show');
+                envelope.querySelector('.envelope').classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
